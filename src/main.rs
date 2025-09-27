@@ -1,18 +1,19 @@
 use std::{thread::sleep, time::Duration};
 use rodio::{source::{SineWave, SquareWave, TriangleWave}, *};
 use rand::Rng;
+use std::collections::HashSet;
 
 fn main() {
-    let mut iter:bool  = false;
+    let mut pressed: HashSet<rdev::Key> = HashSet::new();
     let streamhandle = rodio::OutputStreamBuilder::open_default_stream().expect("oops");
     let callback = move |event: rdev::Event| {
         match event.event_type {
-            rdev::EventType::KeyPress(_key) => {
-                let wave = wavemake(200,300);
-                if iter == false {
+            rdev::EventType::KeyPress(key) => {
+                if !pressed.contains(&key) {
+                    pressed.insert(key);
+                    let wave = wavemake(200,300);
                     streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
                     sleep(Duration::from_millis(20));
-                    iter = true;
                 }
             }
             rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
@@ -25,8 +26,8 @@ fn main() {
                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.30));
                 sleep(Duration::from_millis(20));
             }
-            rdev::EventType::KeyRelease(_button) => {
-                iter = false;
+            rdev::EventType::KeyRelease(key) => {
+                pressed.remove(&key);
             }
             _ => {}
         }
