@@ -13,7 +13,32 @@ fn main() {
         .build();
     app.connect_activate(build_ui);
     app.run();
-    
+}
+// Wave generator functions
+fn wavemake(low: i32,high: i32) -> SineWave {
+    let rng = rand::rng().random_range(low..high);
+    let wave = SineWave::new(rng as f32);
+    wave
+}
+fn wwavemake(low: i32,high: i32) -> TriangleWave {
+    let rng = rand::rng().random_range(low..high);
+    let wave = TriangleWave::new(rng as f32);
+    wave
+}
+// Ui builder
+fn build_ui(app: &Application) {
+    let window = ApplicationWindow::builder()
+        .application(app)
+        .title("ClickExla")
+        .build();
+    window.present();
+    let label = Label::new(Some("ClickExla is running in the background.\nClose this window to stop it."));
+    window.set_child(Some(&label));
+    // Sound init
+    soundgen();
+
+}
+fn soundgen() {
     // Backend logic
     let mut pressed: HashSet<rdev::Key> = HashSet::new();
     let streamhandle = rodio::OutputStreamBuilder::open_default_stream().expect("oops");
@@ -46,25 +71,4 @@ fn main() {
     if let Err(error) = rdev::listen(callback) {
         println!("Error: {:?}", error);
     }
-}
-// Wave generator functions
-fn wavemake(low: i32,high: i32) -> SineWave {
-    let rng = rand::rng().random_range(low..high);
-    let wave = SineWave::new(rng as f32);
-    wave
-}
-fn wwavemake(low: i32,high: i32) -> TriangleWave {
-    let rng = rand::rng().random_range(low..high);
-    let wave = TriangleWave::new(rng as f32);
-    wave
-}
-// Ui builder
-fn build_ui(app: &Application) {
-    let window = ApplicationWindow::builder()
-        .application(app)
-        .title("ClickExla")
-        .build();
-    window.present();
-    let label = Label::new(Some("ClickExla is running in the background.\nClose this window to stop it."));
-    window.set_child(Some(&label));
 }
