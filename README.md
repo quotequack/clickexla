@@ -20,10 +20,13 @@ sudo cp ./target/release/clicer /usr/bin
 ### for others!
 am sorry but like... figure it out and post what you did here as a pull request for others! (please)
 ## Usage!
-run the program and the sounds are on! there is no gui and you have to run it from terminal for now
+run the program select settings (in fields please use numbers) and after the program hides the sounds should work
 ## Contribution 
 Any and all contributions are HIGHLY appreciated
 ## Roadmap
-* GUI
+* Json settings easy to access
 * Releases
 * Windows/Mac install guides
+## Completed
+* UI
+* Different sound gen waves
