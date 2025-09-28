@@ -135,9 +135,9 @@ fn build_ui(app: &Application) {
         btn_min, 
         whe_max, 
         whe_min, 
-        clck_opt, 
-        btn_opt, 
-        whe_opt
+        clck_select as u8, 
+        btn_select as u8, 
+        whe_select as u8
     ));
     window.present();
 }
@@ -172,7 +172,9 @@ fn soundgen(clckmax:i32,clckmin:i32,btnmax:i32,btnmin:i32,whemax:i32,whemin:i32,
             _ => {}
         }
     };
-    if let Err(error) = rdev::listen(callback) {
-        println!("Error: {:?}", error);
-    }
+    thread::spawn(move || {
+        if let Err(error) = rdev::listen(callback) {
+            eprintln!("error: {:?}", error);
+        }
+    });
 }
