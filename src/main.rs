@@ -4,9 +4,19 @@ use rand::Rng;
 use std::collections::HashSet;
 use gtk::prelude::*;
 use gtk::*;
+use std::sync::{Arc, Mutex};
 
 const APP_ID: &str = "org.quote.clickexla";
 fn main() {
+    let Arc::new(Mutex::new(clck_option)):Arc<Mutex<u8>>;
+    let Arc::new(Mutex::new(btn_option)):Arc<Mutex<u8>>;
+    let Arc::new(Mutex::new(whe_option)):Arc<Mutex<u8>>;
+    let Arc::new(Mutex::new(clck_min)):Arc<Mutex<i32>>;
+    let Arc::new(Mutex::new(clck_max)):Arc<Mutex<i32>>;
+    let Arc::new(Mutex::new(btn_min)):Arc<Mutex<i32>>;
+    let Arc::new(Mutex::new(btn_max)):Arc<Mutex<i32>>;
+    let Arc::new(Mutex::new(whe_min)):Arc<Mutex<i32>>;
+    let Arc::new(Mutex::new(whe_max)):Arc<Mutex<i32>>;
     thread::spawn(|| {
         // Frontend Init
         let app = Application::builder()
@@ -119,9 +129,18 @@ fn build_ui(app: &Application) {
     main.append(&whe);
     window.set_child(Some(&main));
     window.present();
+    let clck_select:u32 = clickoptions.selected();
+    let btn_select:u32 = buttonoptions.selected();
+    let whe_select:u32 = wheeloptions.selected();
+    let clck_min: i32 = minhertzclck.text().parse().unwrap_or(200);
+    let clck_max: i32 = maxhertzclck.text().parse().unwrap_or(400);
+    let btn_min: i32 = minhertzbtn.text().parse().unwrap_or(200);
+    let btn_max: i32 = maxhertzbtn.text().parse().unwrap_or(300);
+    let whe_min: i32 = minhertzwhe.text().parse().unwrap_or(400);
+    let whe_max: i32 = maxhertzwhe.text().parse().unwrap_or(500);
 }
 
-fn soundgen() {
+fn soundgen(clckmax:i32,clckmin:i32,btnmax:i32,btnmin:i32,whemax:i32,whemin:i32,clckopt:u8,btnopt:u8,wheopt:u8) {
     // Backend logic
     let mut pressed: HashSet<rdev::Key> = HashSet::new();
     let streamhandle = rodio::OutputStreamBuilder::open_default_stream().expect("oops");
