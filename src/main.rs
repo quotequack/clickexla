@@ -1,9 +1,20 @@
 use std::{thread::sleep, time::Duration};
-use rodio::{source::{SineWave, SquareWave, TriangleWave}, *};
+use rodio::{source::{SineWave, TriangleWave}, *};
 use rand::Rng;
 use std::collections::HashSet;
+use gtk::prelude::*;
+use gtk::*;
 
+const APP_ID: &str = "org.quote.clickexla";
 fn main() {
+    // Frontend Init
+    let app = Application::builder()
+        .application_id(&*APP_ID)
+        .build();
+    app.connect_activate(build_ui);
+    app.run();
+    
+    // Backend logic
     let mut pressed: HashSet<rdev::Key> = HashSet::new();
     let streamhandle = rodio::OutputStreamBuilder::open_default_stream().expect("oops");
     let callback = move |event: rdev::Event| {
@@ -36,6 +47,7 @@ fn main() {
         println!("Error: {:?}", error);
     }
 }
+// Wave generator functions
 fn wavemake(low: i32,high: i32) -> SineWave {
     let rng = rand::rng().random_range(low..high);
     let wave = SineWave::new(rng as f32);
@@ -46,4 +58,13 @@ fn wwavemake(low: i32,high: i32) -> TriangleWave {
     let wave = TriangleWave::new(rng as f32);
     wave
 }
-
+// Ui builder
+fn build_ui(app: &Application) {
+    let window = ApplicationWindow::builder()
+        .application(app)
+        .title("ClickExla")
+        .build();
+    window.present();
+    let label = Label::new(Some("ClickExla is running in the background.\nClose this window to stop it."));
+    window.set_child(Some(&label));
+}
