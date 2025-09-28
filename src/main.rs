@@ -31,14 +31,96 @@ fn wwavemake(low: i32,high: i32) -> TriangleWave {
 }
 // Ui builder
 fn build_ui(app: &Application) {
+    let clickopt = ["Sinewave", "TriangleWave", "SquareWave"];
+    let clistr = StringList::new(&clickopt);
     let window = ApplicationWindow::builder()
         .application(app)
         .title("ClickExla")
         .build();
+    let clabel = Label::builder()
+        .label("Click Sound")
+        .build();
+    let blabel = Label::builder()
+        .label("Button Sound")
+        .build();
+    let wheellabel = Label::builder()
+        .label("Wheel Sound")
+        .build();
+    let clickoptions = DropDown::builder()
+        .model(&clistr)
+        .selected(1)
+        .build();
+    let buttonoptions = DropDown::builder()
+        .model(&clistr)
+        .selected(0)
+        .build();
+    let wheeloptions = DropDown::builder()
+        .model(&clistr)
+        .selected(0)
+        .build();
+    let  maxhertzbtn = Entry::builder()
+        .placeholder_text("Max Hertz")
+        .text("300")
+        .build();
+    let  minhertzbtn = Entry::builder()
+        .placeholder_text("Min Hertz")
+        .text("200")
+        .build();
+    let maxhertzclck = Entry::builder()
+        .placeholder_text("Max Hertz")
+        .text("400")
+        .build();
+    let minhertzclck = Entry::builder()
+        .placeholder_text("Min Hertz")
+        .text("200")
+        .build();
+    let maxhertzwhe = Entry::builder()
+        .placeholder_text("Max Hertz")
+        .text("500")
+        .build();
+    let minhertzwhe = Entry::builder()
+        .placeholder_text("Min Hertz")
+        .text("400")
+        .build();
+    let main = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(3)
+        .margin_top(10)
+        .margin_bottom(10)
+        .margin_start(10)
+        .margin_end(10)
+        .build();
+    let btn = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(1)
+        .build();
+    btn.append(&blabel);
+    btn.append(&buttonoptions);
+    btn.append(&minhertzbtn);
+    btn.append(&maxhertzbtn);
+    let clk = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(1)
+        .build();
+    clk.append(&clabel);
+    clk.append(&clickoptions);
+    clk.append(&minhertzclck);
+    clk.append(&maxhertzclck);
+    let whe = Box::builder()
+        .orientation(Orientation::Vertical)
+        .spacing(1)
+        .build();
+    whe.append(&wheellabel);
+    whe.append(&wheeloptions);
+    whe.append(&minhertzwhe);
+    whe.append(&maxhertzwhe);
+    main.append(&btn);
+    main.append(&clk);
+    main.append(&whe);
+    window.set_child(Some(&main));
     window.present();
-    let label = Label::new(Some("ClickExla is running in the background.\nClose this window to stop it."));
-    window.set_child(Some(&label));
 }
+
 fn soundgen() {
     // Backend logic
     let mut pressed: HashSet<rdev::Key> = HashSet::new();
