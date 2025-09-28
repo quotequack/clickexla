@@ -1,4 +1,4 @@
-use std::{thread::sleep, time::Duration};
+use std::{thread::{self, sleep}, time::Duration};
 use rodio::{source::{SineWave, TriangleWave}, *};
 use rand::Rng;
 use std::collections::HashSet;
@@ -7,12 +7,16 @@ use gtk::*;
 
 const APP_ID: &str = "org.quote.clickexla";
 fn main() {
-    // Frontend Init
-    let app = Application::builder()
-        .application_id(&*APP_ID)
-        .build();
-    app.connect_activate(build_ui);
-    app.run();
+    thread::spawn(|| {
+        // Frontend Init
+        let app = Application::builder()
+            .application_id(&*APP_ID)
+            .build();
+        app.connect_activate(build_ui);
+        app.run();
+    });
+    // Sound init
+    soundgen();
 }
 // Wave generator functions
 fn wavemake(low: i32,high: i32) -> SineWave {
@@ -34,9 +38,6 @@ fn build_ui(app: &Application) {
     window.present();
     let label = Label::new(Some("ClickExla is running in the background.\nClose this window to stop it."));
     window.set_child(Some(&label));
-    // Sound init
-    soundgen();
-
 }
 fn soundgen() {
     // Backend logic
