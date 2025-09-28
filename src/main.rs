@@ -1,10 +1,10 @@
-use std::{thread::{self, sleep}, time::Duration};
-use rodio::{source::{SineWave, TriangleWave}, *};
+use rodio::{source::{SineWave, TriangleWave, SquareWave}, *};
 use rand::Rng;
-use std::collections::HashSet;
-use gtk::prelude::*;
+use gtk::{prelude::*, subclass::window};
 use gtk::*;
-use std::sync::{Arc, Mutex};
+use std::{time::Duration, collections::HashSet, thread::{self, sleep}};
+#[allow(unused)]
+#[allow(deprecated)]
 
 const APP_ID: &str = "org.quote.clickexla";
 fn main() {
@@ -16,21 +16,26 @@ fn main() {
     app.run();
 }
 // Wave generator functions
-fn wavemake(low: i32,high: i32) -> SineWave {
+fn swavemake(low: i32,high: i32) -> SineWave {
     let rng = rand::rng().random_range(low..high);
     let wave = SineWave::new(rng as f32);
     wave
 }
-fn wwavemake(low: i32,high: i32) -> TriangleWave {
+fn twavemake(low: i32,high: i32) -> TriangleWave {
     let rng = rand::rng().random_range(low..high);
     let wave = TriangleWave::new(rng as f32);
+    wave
+}
+fn sqwavemake(low: i32,high: i32) -> SquareWave {
+    let rng = rand::rng().random_range(low..high);
+    let wave = SquareWave::new(rng as f32);
     wave
 }
 // Ui builder
 fn build_ui(app: &Application) {
     let clickopt = ["Sinewave", "TriangleWave", "SquareWave"];
     let clistr = StringList::new(&clickopt);
-    let window = ApplicationWindow::builder()
+    let window= ApplicationWindow::builder()
         .application(app)
         .title("ClickExla")
         .build();
@@ -119,60 +124,125 @@ fn build_ui(app: &Application) {
     main.append(&whe);
     main.append(&execute);
     window.set_child(Some(&main));
-    let clck_select:u32 = clickoptions.selected();
-    let btn_select:u32 = buttonoptions.selected();
-    let whe_select:u32 = wheeloptions.selected();
-    let clck_min: i32 = minhertzclck.text().parse().unwrap_or(200);
-    let clck_max: i32 = maxhertzclck.text().parse().unwrap_or(400);
-    let btn_min: i32 = minhertzbtn.text().parse().unwrap_or(200);
-    let btn_max: i32 = maxhertzbtn.text().parse().unwrap_or(300);
-    let whe_min: i32 = minhertzwhe.text().parse().unwrap_or(400);
-    let whe_max: i32 = maxhertzwhe.text().parse().unwrap_or(500);
-    execute.connect_clicked(move |_| soundgen(
-        clck_max,
-        clck_min, 
-        btn_max, 
-        btn_min, 
-        whe_max, 
-        whe_min, 
-        clck_select as u8, 
-        btn_select as u8, 
-        whe_select as u8
-    ));
+    let windows = window.clone();
+    execute.connect_clicked(move |_| {
+        windows.hide();
+        soundgen(
+            clickoptions.clone(),
+            buttonoptions.clone(),
+            wheeloptions.clone(),
+            minhertzclck.clone(),
+            maxhertzclck.clone(),
+            minhertzbtn.clone(),
+            maxhertzbtn.clone(),
+            minhertzwhe.clone(),
+            maxhertzwhe.clone(),
+        );
+    });
     window.present();
 }
 
-fn soundgen(clckmax:i32,clckmin:i32,btnmax:i32,btnmin:i32,whemax:i32,whemin:i32,clckopt:u8,btnopt:u8,wheopt:u8) {
-    // Backend logic
-    let mut pressed: HashSet<rdev::Key> = HashSet::new();
-    let streamhandle = rodio::OutputStreamBuilder::open_default_stream().expect("oops");
-    let callback = move |event: rdev::Event| {
-        match event.event_type {
-            rdev::EventType::KeyPress(key) => {
-                if !pressed.contains(&key) {
-                    pressed.insert(key);
-                    let wave = wavemake(200,300);
-                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                    sleep(Duration::from_millis(20));
-                }
-            }
-            rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
-                let wave = wavemake(400,500);
-                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.10));
-                sleep(Duration::from_millis(10));
-            }
-            rdev::EventType::ButtonPress(_button) => {
-                let wave = wwavemake(200,400);
-                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.30));
-                sleep(Duration::from_millis(20));
-            }
-            rdev::EventType::KeyRelease(key) => {
-                pressed.remove(&key);
-            }
-            _ => {}
-        }
-    };
+fn soundgen(clickoptions: DropDown, buttonoptions: DropDown, wheeloptions: DropDown, minhertzclck: Entry, maxhertzclck: Entry, minhertzbtn: Entry, maxhertzbtn: Entry, minhertzwhe: Entry, maxhertzwhe: Entry) {
+    // Read info
+    let clckopt:u32 = clickoptions.selected();
+    let btnopt:u32 = buttonoptions.selected();
+    let wheopt:u32 = wheeloptions.selected();
+    let clckmin: i32 = minhertzclck.text().parse().expect("Please enter a valid number(CLCKMIN)");
+    let clckmax: i32 = maxhertzclck.text().parse().expect("Please enter a valid number(CLCKMAX)");
+    let btnmin: i32 = minhertzbtn.text().parse().expect("Please enter a valid number(BTNMIN)");
+    let btnmax: i32 = maxhertzbtn.text().parse().expect("Please enter a valid number(BTNMAX)");
+    let whemin: i32 = minhertzwhe.text().parse().expect("Please enter a valid number(WHEMIN)");
+    let whemax: i32 = maxhertzwhe.text().parse().expect("Please enter a valid number(WHEMAX)");
     thread::spawn(move || {
+        // Backend logic
+        let mut pressed: HashSet<rdev::Key> = HashSet::new();
+        let streamhandle = rodio::OutputStreamBuilder::open_default_stream().expect("oops");
+        let callback = move |event: rdev::Event| {
+            match event.event_type {
+                rdev::EventType::KeyPress(key) => {
+                    if !pressed.contains(&key) {
+                        pressed.insert(key);
+                        match btnopt {
+                            0=>{
+                                let wave=swavemake(btnmin, btnmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
+                            1=>{
+                                let wave=twavemake(btnmin, btnmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
+                            2=>{
+                                let wave=sqwavemake(btnmin, btnmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
+                            _=>{
+                                let wave=swavemake(btnmin, btnmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                                println!("Error in button sound selection, defaulting to SineWave")
+                            },
+                        }
+                    }
+                }
+                rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
+                    match btnopt {
+                        0=>{
+                            let wave=swavemake(whemin, whemax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                        },
+                        1=>{
+                            let wave=twavemake(whemin, whemax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                        },
+                        2=>{
+                            let wave=sqwavemake(whemin, whemax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                        },
+                        _=>{
+                            let wave=swavemake(whemin, whemax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                            println!("Error in button sound selection, defaulting to SineWave")
+                        },
+                    }
+                }
+                rdev::EventType::ButtonPress(_button) => {
+                    match btnopt {
+                        0=>{
+                            let wave=swavemake(clckmin, clckmax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                        },
+                        1=>{
+                            let wave=twavemake(clckmin, clckmax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                        },
+                        2=>{
+                            let wave=sqwavemake(clckmin, clckmax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                        },
+                        _=>{
+                            let wave=swavemake(clckmin, clckmax);
+                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                            sleep(Duration::from_millis(20));
+                            println!("Error in button sound selection, defaulting to SineWave")
+                        },
+                    }
+                }
+                rdev::EventType::KeyRelease(key) => {
+                    pressed.remove(&key);
+                }
+                _ => {}
+            }
+        };
         if let Err(error) = rdev::listen(callback) {
             eprintln!("error: {:?}", error);
         }
