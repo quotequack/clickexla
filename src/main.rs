@@ -8,25 +8,12 @@ use std::sync::{Arc, Mutex};
 
 const APP_ID: &str = "org.quote.clickexla";
 fn main() {
-    let Arc::new(Mutex::new(clck_option)):Arc<Mutex<u8>>;
-    let Arc::new(Mutex::new(btn_option)):Arc<Mutex<u8>>;
-    let Arc::new(Mutex::new(whe_option)):Arc<Mutex<u8>>;
-    let Arc::new(Mutex::new(clck_min)):Arc<Mutex<i32>>;
-    let Arc::new(Mutex::new(clck_max)):Arc<Mutex<i32>>;
-    let Arc::new(Mutex::new(btn_min)):Arc<Mutex<i32>>;
-    let Arc::new(Mutex::new(btn_max)):Arc<Mutex<i32>>;
-    let Arc::new(Mutex::new(whe_min)):Arc<Mutex<i32>>;
-    let Arc::new(Mutex::new(whe_max)):Arc<Mutex<i32>>;
-    thread::spawn(|| {
-        // Frontend Init
-        let app = Application::builder()
-            .application_id(&*APP_ID)
-            .build();
-        app.connect_activate(build_ui);
-        app.run();
-    });
-    // Sound init
-    soundgen();
+    // Frontend Init
+    let app = Application::builder()
+        .application_id(&*APP_ID)
+        .build();
+    app.connect_activate(build_ui);
+    app.run();
 }
 // Wave generator functions
 fn wavemake(low: i32,high: i32) -> SineWave {
@@ -46,6 +33,9 @@ fn build_ui(app: &Application) {
     let window = ApplicationWindow::builder()
         .application(app)
         .title("ClickExla")
+        .build();
+    let execute = Button::builder()
+        .label("Execute")
         .build();
     let clabel = Label::builder()
         .label("Click Sound")
@@ -127,8 +117,8 @@ fn build_ui(app: &Application) {
     main.append(&btn);
     main.append(&clk);
     main.append(&whe);
+    main.append(&execute);
     window.set_child(Some(&main));
-    window.present();
     let clck_select:u32 = clickoptions.selected();
     let btn_select:u32 = buttonoptions.selected();
     let whe_select:u32 = wheeloptions.selected();
@@ -138,6 +128,18 @@ fn build_ui(app: &Application) {
     let btn_max: i32 = maxhertzbtn.text().parse().unwrap_or(300);
     let whe_min: i32 = minhertzwhe.text().parse().unwrap_or(400);
     let whe_max: i32 = maxhertzwhe.text().parse().unwrap_or(500);
+    execute.connect_clicked(move |_| soundgen(
+        clck_max,
+        clck_min, 
+        btn_max, 
+        btn_min, 
+        whe_max, 
+        whe_min, 
+        clck_opt, 
+        btn_opt, 
+        whe_opt
+    ));
+    window.present();
 }
 
 fn soundgen(clckmax:i32,clckmin:i32,btnmax:i32,btnmin:i32,whemax:i32,whemin:i32,clckopt:u8,btnopt:u8,wheopt:u8) {
