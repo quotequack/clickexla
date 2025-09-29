@@ -24,10 +24,11 @@ run the program select settings (in fields please use numbers) and after the pro
 ## Contribution 
 Any and all contributions are HIGHLY appreciated
 ## Roadmap
-* Json settings easy to access
+* Application icon and .desktop app
 * Releases
 * Windows/Mac install guides
 ## Completed
+* Json settings easy to access
 * UI
 * Different sound gen waves
 * Sounds individually togglable
