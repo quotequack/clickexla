@@ -185,6 +185,8 @@ fn soundgen(clickoptions: DropDown,
     let enaclck: bool = enable_clck.is_active();
     let enabtn: bool = enable_btn.is_active();
     let enawhe: bool = enable_whee.is_active();
+    // Save to json
+    save_json(clckopt, btnopt, wheopt, clckmin, clckmax, btnmin, btnmax, whemin, whemax, enaclck, enabtn, enawhe);
     thread::spawn(move || {
         // Backend logic
         let mut pressed: HashSet<rdev::Key> = HashSet::new();
