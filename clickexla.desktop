@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Clickexla
+Comment=a silly keyboard sound program :D
+Exec=clickexla
+Icon=clickexla
+Terminal=false
+Type=Application
+Categories=Utility;

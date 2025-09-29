@@ -1,0 +1,20 @@
+{
+        "clck": {
+            "enabled": true,
+            "mahertz": 400,
+            "mihertz": 200,
+            "wave": 0
+        },
+        "btn": {
+            "enabled": true,
+            "mahertz": 300,
+            "mihertz": 200,
+            "wave": 0
+        },
+        "whee": {
+            "enabled": true,
+            "mahertz": 500,
+            "mihertz": 400,
+            "wave": 0
+        }
+    }
