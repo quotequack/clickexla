@@ -58,6 +58,7 @@ fn build_ui(app: &Application) {
     let window= ApplicationWindow::builder()
         .application(app)
         .title("ClickExla")
+        .maximized(false)
         .build();
     let execute = Button::builder()
         .label("Execute")
