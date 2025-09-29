@@ -51,7 +51,7 @@ fn sqwavemake(low: i32,high: i32) -> SquareWave {
 
 fn build_ui(app: &Application) {
     // Load settings
-    let settings = load_settings("/home/quote/.config/settings.json").unwrap();
+    let settings = load_settings("/home/quote/.config/clickexla.json").unwrap();
     // Ui builder
     let clickopt = ["Sinewave", "TriangleWave", "SquareWave"];
     let clistr = StringList::new(&clickopt);
@@ -350,7 +350,7 @@ fn save_json (
             enabtn, btnmax, btnmin, btnopt,
             enawhe, whemax, whemin, wheopt
         );
-    fs::write("/home/quote/.config/settings.json", data).expect("Unable to save data");
+    fs::write("/home/quote/.config/clickexla.json", data).expect("Unable to save data");
 }
 fn load_settings(path: &str) -> Result<Settings, std::boxed::Box<dyn std::error::Error>> {
     if Path::new(&path).exists() {

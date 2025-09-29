@@ -20,7 +20,7 @@ sudo cp ./target/release/clicer /usr/bin
 ### for others!
 am sorry but like... figure it out and post what you did here as a pull request for others! (please)
 ## Usage!
-run the program select settings (in fields please use numbers) and after the program hides the sounds should work
+run the program from your favourite application launcher or from the terminal! select your settings (in fields please use numbers) and after the program hides the sounds should work (settings are kept between sessions and are kept in .config/clickexa.json at least for linux)
 ## Contribution 
 Any and all contributions are HIGHLY appreciated
 ## Roadmap
