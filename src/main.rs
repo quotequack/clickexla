@@ -3,6 +3,8 @@ use rand::Rng;
 use gtk::{prelude::*, subclass::window};
 use gtk::*;
 use std::{time::Duration, collections::HashSet, thread::{self, sleep}};
+use serde::*;
+use serde_json::*;
 #[allow(unused)]
 #[allow(deprecated)]
 
@@ -87,6 +89,15 @@ fn build_ui(app: &Application) {
         .placeholder_text("Min Hertz")
         .text("400")
         .build();
+    let enable_clck = CheckButton::builder()
+        .label("Enable")
+        .build();
+    let enable_btn = CheckButton::builder()
+        .label("Enable")
+        .build();
+    let enable_whee = CheckButton::builder()
+        .label("Enable")
+        .build();
     let main = Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(3)
@@ -96,29 +107,32 @@ fn build_ui(app: &Application) {
         .margin_end(10)
         .build();
     let btn = Box::builder()
-        .orientation(Orientation::Vertical)
+        .orientation(Orientation::Horizontal)
         .spacing(1)
         .build();
     btn.append(&blabel);
     btn.append(&buttonoptions);
     btn.append(&minhertzbtn);
     btn.append(&maxhertzbtn);
+    btn.append(&enable_btn);
     let clk = Box::builder()
-        .orientation(Orientation::Vertical)
+        .orientation(Orientation::Horizontal)
         .spacing(1)
         .build();
     clk.append(&clabel);
     clk.append(&clickoptions);
     clk.append(&minhertzclck);
     clk.append(&maxhertzclck);
+    clk.append(&enable_clck);
     let whe = Box::builder()
-        .orientation(Orientation::Vertical)
+        .orientation(Orientation::Horizontal)
         .spacing(1)
         .build();
     whe.append(&wheellabel);
     whe.append(&wheeloptions);
     whe.append(&minhertzwhe);
     whe.append(&maxhertzwhe);
+    whe.append(&enable_whee);
     main.append(&btn);
     main.append(&clk);
     main.append(&whe);
@@ -137,12 +151,27 @@ fn build_ui(app: &Application) {
             maxhertzbtn.clone(),
             minhertzwhe.clone(),
             maxhertzwhe.clone(),
+            enable_clck.clone(),
+            enable_btn.clone(),
+            enable_whee.clone()
         );
     });
     window.present();
 }
 
-fn soundgen(clickoptions: DropDown, buttonoptions: DropDown, wheeloptions: DropDown, minhertzclck: Entry, maxhertzclck: Entry, minhertzbtn: Entry, maxhertzbtn: Entry, minhertzwhe: Entry, maxhertzwhe: Entry) {
+fn soundgen(clickoptions: DropDown, 
+    buttonoptions: DropDown, 
+    wheeloptions: DropDown, 
+    minhertzclck: Entry, 
+    maxhertzclck: Entry, 
+    minhertzbtn: Entry, 
+    maxhertzbtn: Entry, 
+    minhertzwhe: Entry, 
+    maxhertzwhe: Entry,
+    enable_clck: CheckButton,
+    enable_btn: CheckButton,
+    enable_whee: CheckButton
+) {
     // Read info
     let clckopt:u32 = clickoptions.selected();
     let btnopt:u32 = buttonoptions.selected();
@@ -153,6 +182,9 @@ fn soundgen(clickoptions: DropDown, buttonoptions: DropDown, wheeloptions: DropD
     let btnmax: i32 = maxhertzbtn.text().parse().expect("Please enter a valid number(BTNMAX)");
     let whemin: i32 = minhertzwhe.text().parse().expect("Please enter a valid number(WHEMIN)");
     let whemax: i32 = maxhertzwhe.text().parse().expect("Please enter a valid number(WHEMAX)");
+    let enaclck: bool = enable_clck.is_active();
+    let enabtn: bool = enable_btn.is_active();
+    let enawhe: bool = enable_whee.is_active();
     thread::spawn(move || {
         // Backend logic
         let mut pressed: HashSet<rdev::Key> = HashSet::new();
@@ -160,26 +192,55 @@ fn soundgen(clickoptions: DropDown, buttonoptions: DropDown, wheeloptions: DropD
         let callback = move |event: rdev::Event| {
             match event.event_type {
                 rdev::EventType::KeyPress(key) => {
-                    if !pressed.contains(&key) {
-                        pressed.insert(key);
+                    if enabtn == true {
+                        if !pressed.contains(&key) {
+                            pressed.insert(key);
+                            match btnopt {
+                                0=>{
+                                    let wave=swavemake(btnmin, btnmax);
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                    sleep(Duration::from_millis(20));
+                                },
+                                1=>{
+                                    let wave=twavemake(btnmin, btnmax);
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                    sleep(Duration::from_millis(20));
+                                },
+                                2=>{
+                                    let wave=sqwavemake(btnmin, btnmax);
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                    sleep(Duration::from_millis(20));
+                                },
+                                _=>{
+                                    let wave=swavemake(btnmin, btnmax);
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                    sleep(Duration::from_millis(20));
+                                    println!("Error in button sound selection, defaulting to SineWave")
+                                },
+                            }
+                        }
+                    }
+                }
+                rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
+                    if enawhe == true {
                         match btnopt {
                             0=>{
-                                let wave=swavemake(btnmin, btnmax);
+                                let wave=swavemake(whemin, whemax);
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
                                 sleep(Duration::from_millis(20));
                             },
                             1=>{
-                                let wave=twavemake(btnmin, btnmax);
+                                let wave=twavemake(whemin, whemax);
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
                                 sleep(Duration::from_millis(20));
                             },
                             2=>{
-                                let wave=sqwavemake(btnmin, btnmax);
+                                let wave=sqwavemake(whemin, whemax);
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
                                 sleep(Duration::from_millis(20));
                             },
                             _=>{
-                                let wave=swavemake(btnmin, btnmax);
+                                let wave=swavemake(whemin, whemax);
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
                                 sleep(Duration::from_millis(20));
                                 println!("Error in button sound selection, defaulting to SineWave")
@@ -187,54 +248,31 @@ fn soundgen(clickoptions: DropDown, buttonoptions: DropDown, wheeloptions: DropD
                         }
                     }
                 }
-                rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
-                    match btnopt {
-                        0=>{
-                            let wave=swavemake(whemin, whemax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                        },
-                        1=>{
-                            let wave=twavemake(whemin, whemax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                        },
-                        2=>{
-                            let wave=sqwavemake(whemin, whemax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                        },
-                        _=>{
-                            let wave=swavemake(whemin, whemax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                            println!("Error in button sound selection, defaulting to SineWave")
-                        },
-                    }
-                }
                 rdev::EventType::ButtonPress(_button) => {
-                    match btnopt {
-                        0=>{
-                            let wave=swavemake(clckmin, clckmax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                        },
-                        1=>{
-                            let wave=twavemake(clckmin, clckmax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                        },
-                        2=>{
-                            let wave=sqwavemake(clckmin, clckmax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                        },
-                        _=>{
-                            let wave=swavemake(clckmin, clckmax);
-                            streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
-                            sleep(Duration::from_millis(20));
-                            println!("Error in button sound selection, defaulting to SineWave")
-                        },
+                    if enaclck == true {
+                        match btnopt {
+                            0=>{
+                                let wave=swavemake(clckmin, clckmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
+                            1=>{
+                                let wave=twavemake(clckmin, clckmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
+                            2=>{
+                                let wave=sqwavemake(clckmin, clckmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
+                            _=>{
+                                let wave=swavemake(clckmin, clckmax);
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                                println!("Error in button sound selection, defaulting to SineWave")
+                            },
+                        }
                     }
                 }
                 rdev::EventType::KeyRelease(key) => {
