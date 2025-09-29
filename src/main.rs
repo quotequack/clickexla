@@ -2,7 +2,7 @@ use rodio::{source::{SineWave, TriangleWave, SquareWave}, *};
 use rand::Rng;
 use gtk::{prelude::*, subclass::window};
 use gtk::*;
-use std::{fs, time::Duration, collections::HashSet, thread::{self, sleep}};
+use std::{fs, time::Duration, collections::HashSet, thread::{self, sleep}, path::Path, error::Error};
 use serde::{Deserialize, Serialize};
 use serde_json;
 #[allow(unused)]
@@ -59,6 +59,7 @@ fn build_ui(app: &Application) {
         .application(app)
         .title("ClickExla")
         .maximized(false)
+        .icon_name("clickexla")
         .build();
     let execute = Button::builder()
         .label("Execute")
@@ -352,8 +353,17 @@ fn save_json (
     fs::write("settings.json", data).expect("Unable to save data");
 }
 fn load_settings(path: &str) -> Result<Settings, std::boxed::Box<dyn std::error::Error>> {
-    let data:String= fs::read_to_string(path)?;
-    let settings: Settings = serde_json::from_str(&data)
-        .expect("invalid json format in settings file");
-    Ok(settings)
+    if Path::new(&path).exists() {
+        let data:String= fs::read_to_string(&path)?;
+        let settings: Settings = serde_json::from_str(&data)
+            .expect("invalid json format in settings file");
+        Ok(settings)
+    } else {
+        std::fs::File::create(&path)?;
+        let clck:Device = Device { enabled: (true), mahertz: (400), mihertz: (200), wave: (1) };
+        let btn:Device = Device { enabled: (true), mahertz: (200), mihertz: (300), wave: (0) };
+        let whee:Device = Device { enabled: (true), mahertz: (400), mihertz: (500), wave: (0) };
+        let settings = Settings { clck: (clck), btn: (btn), whee: (whee) };
+        Ok(settings)
+    }
 }

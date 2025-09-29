@@ -3,7 +3,7 @@
             "enabled": true,
             "mahertz": 400,
             "mihertz": 200,
-            "wave": 0
+            "wave": 1
         },
         "btn": {
             "enabled": true,

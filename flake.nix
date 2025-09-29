@@ -24,7 +24,13 @@
                 pkgs.cargo
             ];
             nativeBuildInputs = [ pkgs.pkg-config ];
-            cargoHash = "sha256-Q3ftrrX9ecDK/9Q5sGx5CDPw3vP+HUmuaHKHdc8w3Fo=";
+            cargoHash = "sha256-3QjT+T2w1Jgz9UeWKaOUBugB9JArz7aPJkCG0gQZXCU=";
+            postInstall = ''
+                mkdir -p $out/share/applications/
+                mkdir -p $out/share/icons/hicolor/128x128/apps/
+                install -Dm644 clickexla.desktop $out/share/applications/clickexla.desktop
+                install -Dm644 icon.png $out/share/icons/hicolor/128x128/apps/clickexla.png
+            '';
         };
 
         devShells."x86_64-linux".default= pkgs.mkShell {
