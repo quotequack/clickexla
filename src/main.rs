@@ -2,7 +2,7 @@ use rodio::{source::{SineWave, TriangleWave, SquareWave}, *};
 use rand::Rng;
 use gtk::{prelude::*, subclass::window};
 use gtk::*;
-use std::{time::Duration, collections::HashSet, thread::{self, sleep}};
+use std::{fs, time::Duration, collections::HashSet, thread::{self, sleep}};
 use serde::*;
 use serde_json::*;
 #[allow(unused)]
@@ -250,7 +250,7 @@ fn soundgen(clickoptions: DropDown,
                 }
                 rdev::EventType::ButtonPress(_button) => {
                     if enaclck == true {
-                        match btnopt {
+                        match clckopt {
                             0=>{
                                 let wave=swavemake(clckmin, clckmax);
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
@@ -285,4 +285,45 @@ fn soundgen(clickoptions: DropDown,
             eprintln!("error: {:?}", error);
         }
     });
+}
+fn save_json (
+    clckopt: u32, 
+    btnopt: u32, 
+    wheopt: u32, 
+    clckmin: i32, 
+    clckmax: i32, 
+    btnmin: i32, 
+    btnmax: i32, 
+    whemin: i32, 
+    whemax: i32,
+    enaclck: bool,
+    enabtn: bool,
+    enawhe: bool
+) {
+    // Save it!! :D
+    let data = format!(r#"{{
+        "clck": {{
+            "enabled": {},
+            "mahertz": {},
+            "mihertz": {},
+            "wave": {}
+        }},
+        "btn": {{
+            "enabled": {},
+            "mahertz": {},
+            "mihertz": {},
+            "wave": {}
+        }},
+        "whee": {{
+            "enabled": {},
+            "mahertz": {},
+            "mihertz": {},
+            "wave": {}
+        }}
+    }}"#,
+            enaclck, clckmax, clckmin, clckopt,
+            enabtn, btnmax, btnmin, btnopt,
+            enawhe, whemax, whemin, wheopt
+        );
+    fs::write("settings.json", data).expect("Unable to save data");
 }
