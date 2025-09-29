@@ -3,10 +3,25 @@ use rand::Rng;
 use gtk::{prelude::*, subclass::window};
 use gtk::*;
 use std::{fs, time::Duration, collections::HashSet, thread::{self, sleep}};
-use serde::*;
-use serde_json::*;
+use serde::{Deserialize, Serialize};
+use serde_json;
 #[allow(unused)]
 #[allow(deprecated)]
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Device {
+    enabled: bool,
+    mahertz: i32,
+    mihertz: i32,
+    wave: u32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Settings {
+    clck: Device,
+    btn: Device,
+    whee: Device,
+}
 
 const APP_ID: &str = "org.quote.clickexla";
 fn main() {
@@ -33,8 +48,11 @@ fn sqwavemake(low: i32,high: i32) -> SquareWave {
     let wave = SquareWave::new(rng as f32);
     wave
 }
-// Ui builder
+
 fn build_ui(app: &Application) {
+    // Load settings
+    let settings = load_settings("settings.json").unwrap();
+    // Ui builder
     let clickopt = ["Sinewave", "TriangleWave", "SquareWave"];
     let clistr = StringList::new(&clickopt);
     let window= ApplicationWindow::builder()
@@ -55,49 +73,52 @@ fn build_ui(app: &Application) {
         .build();
     let clickoptions = DropDown::builder()
         .model(&clistr)
-        .selected(1)
+        .selected(settings.clck.wave)
         .build();
     let buttonoptions = DropDown::builder()
         .model(&clistr)
-        .selected(0)
+        .selected(settings.btn.wave)
         .build();
     let wheeloptions = DropDown::builder()
         .model(&clistr)
-        .selected(0)
+        .selected(settings.whee.wave)
         .build();
     let  maxhertzbtn = Entry::builder()
         .placeholder_text("Max Hertz")
-        .text("300")
+        .text(format!("{}",settings.btn.mahertz))
         .build();
     let  minhertzbtn = Entry::builder()
         .placeholder_text("Min Hertz")
-        .text("200")
+        .text(format!("{}",settings.btn.mihertz))
         .build();
     let maxhertzclck = Entry::builder()
         .placeholder_text("Max Hertz")
-        .text("400")
+        .text(format!("{}",settings.clck.mahertz))
         .build();
     let minhertzclck = Entry::builder()
         .placeholder_text("Min Hertz")
-        .text("200")
+        .text(format!("{}",settings.clck.mihertz))
         .build();
     let maxhertzwhe = Entry::builder()
         .placeholder_text("Max Hertz")
-        .text("500")
+        .text(format!("{}",settings.whee.mahertz))
         .build();
     let minhertzwhe = Entry::builder()
         .placeholder_text("Min Hertz")
-        .text("400")
+        .text(format!("{}",settings.whee.mihertz))
         .build();
     let enable_clck = CheckButton::builder()
         .label("Enable")
         .build();
+    enable_clck.set_active(settings.clck.enabled);
     let enable_btn = CheckButton::builder()
         .label("Enable")
         .build();
+    enable_btn.set_active(settings.btn.enabled);
     let enable_whee = CheckButton::builder()
         .label("Enable")
         .build();
+    enable_whee.set_active(settings.whee.enabled);
     let main = Box::builder()
         .orientation(Orientation::Vertical)
         .spacing(3)
@@ -328,4 +349,10 @@ fn save_json (
             enawhe, whemax, whemin, wheopt
         );
     fs::write("settings.json", data).expect("Unable to save data");
+}
+fn load_settings(path: &str) -> Result<Settings, std::boxed::Box<dyn std::error::Error>> {
+    let data:String= fs::read_to_string(path)?;
+    let settings: Settings = serde_json::from_str(&data)
+        .expect("invalid json format in settings file");
+    Ok(settings)
 }
