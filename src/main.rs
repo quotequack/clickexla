@@ -51,7 +51,7 @@ fn sqwavemake(low: i32,high: i32) -> SquareWave {
 
 fn build_ui(app: &Application) {
     // Load settings
-    let settings = load_settings("settings.json").unwrap();
+    let settings = load_settings("/home/quote/.config/settings.json").unwrap();
     // Ui builder
     let clickopt = ["Sinewave", "TriangleWave", "SquareWave"];
     let clistr = StringList::new(&clickopt);
@@ -350,7 +350,7 @@ fn save_json (
             enabtn, btnmax, btnmin, btnopt,
             enawhe, whemax, whemin, wheopt
         );
-    fs::write("settings.json", data).expect("Unable to save data");
+    fs::write("/home/quote/.config/settings.json", data).expect("Unable to save data");
 }
 fn load_settings(path: &str) -> Result<Settings, std::boxed::Box<dyn std::error::Error>> {
     if Path::new(&path).exists() {
@@ -361,8 +361,8 @@ fn load_settings(path: &str) -> Result<Settings, std::boxed::Box<dyn std::error:
     } else {
         std::fs::File::create(&path)?;
         let clck:Device = Device { enabled: (true), mahertz: (400), mihertz: (200), wave: (1) };
-        let btn:Device = Device { enabled: (true), mahertz: (200), mihertz: (300), wave: (0) };
-        let whee:Device = Device { enabled: (true), mahertz: (400), mihertz: (500), wave: (0) };
+        let btn:Device = Device { enabled: (true), mahertz: (300), mihertz: (200), wave: (0) };
+        let whee:Device = Device { enabled: (true), mahertz: (500), mihertz: (400), wave: (0) };
         let settings = Settings { clck: (clck), btn: (btn), whee: (whee) };
         Ok(settings)
     }
