@@ -30,3 +30,4 @@ Any and all contributions are HIGHLY appreciated
 ## Completed
 * UI
 * Different sound gen waves
+* Sounds individually togglable
