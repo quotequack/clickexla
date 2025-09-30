@@ -5,6 +5,7 @@ use gtk::*;
 use std::{fs, time::Duration, collections::HashSet, thread::{self, sleep}, path::Path, error::Error};
 use serde::{Deserialize, Serialize};
 use serde_json;
+use rdev::Key;
 #[allow(unused)]
 #[allow(deprecated)]
 
@@ -217,9 +218,9 @@ fn soundgen(clickoptions: DropDown,
         let callback = move |event: rdev::Event| {
             match event.event_type {
                 rdev::EventType::KeyPress(key) => {
-                    if enabtn == true {
-                        if !pressed.contains(&key) {
-                            pressed.insert(key);
+                    if !pressed.contains(&key) {
+                        pressed.insert(key);
+                        if enabtn == true {
                             match btnopt {
                                 0=>{
                                     let wave=swavemake(btnmin, btnmax);
@@ -244,6 +245,12 @@ fn soundgen(clickoptions: DropDown,
                                 },
                             }
                         }
+                    }
+                    if (key == Key::KeyQ) 
+                    && (pressed.contains(&Key::ControlLeft)) || (pressed.contains(&Key::ControlRight))
+                    && (pressed.contains(&Key::Alt)) || (pressed.contains(&Key::AltGr))
+                    {
+                        std::process::exit(0);
                     }
                 }
                 rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
