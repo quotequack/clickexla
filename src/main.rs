@@ -224,7 +224,7 @@ fn soundgen(clickoptions: DropDown,
                             match btnopt {
                                 0=>{
                                     let wave=swavemake(btnmin, btnmax);
-                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(2.20));
                                     sleep(Duration::from_millis(20));
                                 },
                                 1=>{
@@ -258,7 +258,7 @@ fn soundgen(clickoptions: DropDown,
                         match wheopt {
                             0=>{
                                 let wave=swavemake(whemin, whemax);
-                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(2.20));
                                 sleep(Duration::from_millis(20));
                             },
                             1=>{
@@ -285,7 +285,7 @@ fn soundgen(clickoptions: DropDown,
                         match clckopt {
                             0=>{
                                 let wave=swavemake(clckmin, clckmax);
-                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(2.20));
                                 sleep(Duration::from_millis(20));
                             },
                             1=>{
