@@ -24,12 +24,13 @@ run the program from your favourite application launcher or from the terminal! s
 To quit press ctrl+alt+q while the ui is hiden (after you click execute)
 ## Contribution 
 Any and all contributions are HIGHLY appreciated
-## Roadmap
-* Releases
-* Windows/Mac install guides
+## Roadmap to 1.0
+* Windows install guide and release
+* Mac install guide and release
 ## Completed
 * Application icon and .desktop app
 * Json settings easy to access
 * UI
 * Different sound gen waves
 * Sounds individually togglable
+* Easy way to quit
