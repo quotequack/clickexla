@@ -1,4 +1,4 @@
-use rodio::{source::{SineWave, TriangleWave, SquareWave}, *};
+use rodio::{source::{FadeIn, FadeOut, SineWave, SquareWave, TriangleWave}, *};
 use rand::Rng;
 use gtk::{prelude::*, subclass::window};
 use gtk::*;
@@ -34,9 +34,9 @@ fn main() {
     app.run();
 }
 // Wave generator functions
-fn swavemake(low: i32,high: i32) -> SineWave {
+fn swavemake(low: i32,high: i32) -> FadeOut<FadeIn<SineWave>> {
     let rng = rand::rng().random_range(low..high);
-    let wave = SineWave::new(rng as f32);
+    let wave = SineWave::new(rng as f32).fade_in(Duration::from_millis(10)).fade_out(Duration::from_millis(10));
     wave
 }
 fn twavemake(low: i32,high: i32) -> TriangleWave {
@@ -224,7 +224,7 @@ fn soundgen(clickoptions: DropDown,
                             match btnopt {
                                 0=>{
                                     let wave=swavemake(btnmin, btnmax);
-                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
                                     sleep(Duration::from_millis(20));
                                 },
                                 1=>{
@@ -239,7 +239,7 @@ fn soundgen(clickoptions: DropDown,
                                 },
                                 _=>{
                                     let wave=swavemake(btnmin, btnmax);
-                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                    streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
                                     sleep(Duration::from_millis(20));
                                     println!("Error in button sound selection, defaulting to SineWave")
                                 },
@@ -255,10 +255,10 @@ fn soundgen(clickoptions: DropDown,
                 }
                 rdev::EventType::Wheel { delta_x: _, delta_y: _ } => {
                     if enawhe == true {
-                        match btnopt {
+                        match wheopt {
                             0=>{
                                 let wave=swavemake(whemin, whemax);
-                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
                                 sleep(Duration::from_millis(20));
                             },
                             1=>{
@@ -273,7 +273,7 @@ fn soundgen(clickoptions: DropDown,
                             },
                             _=>{
                                 let wave=swavemake(whemin, whemax);
-                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
                                 sleep(Duration::from_millis(20));
                                 println!("Error in button sound selection, defaulting to SineWave")
                             },
@@ -285,7 +285,7 @@ fn soundgen(clickoptions: DropDown,
                         match clckopt {
                             0=>{
                                 let wave=swavemake(clckmin, clckmax);
-                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
+                                streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(1.20));
                                 sleep(Duration::from_millis(20));
                             },
                             1=>{
