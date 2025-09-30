@@ -1,8 +1,8 @@
-use rodio::{source::{FadeIn, FadeOut, SineWave, SquareWave, TriangleWave}, *};
+use rodio::{source::{FadeIn, FadeOut, SineWave, SquareWave, TriangleWave, Source}, *};
 use rand::Rng;
 use gtk::{prelude::*, subclass::window};
 use gtk::*;
-use std::{fs, time::Duration, collections::HashSet, thread::{self, sleep}, path::Path, error::Error};
+use std::{collections::HashSet, error::Error, fs::{self, File}, io::BufReader, path::Path, thread::{self, sleep}, time::Duration};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use rdev::Key;
@@ -33,6 +33,11 @@ fn main() {
     app.connect_activate(build_ui);
     app.run();
 }
+fn custom(path: String) -> Decoder<BufReader<File>> {
+    let file = BufReader::new(File::open(path).unwrap());
+    let source = Decoder::new(file).unwrap();
+    source
+}
 // Wave generator functions
 fn swavemake(low: i32,high: i32) -> FadeOut<FadeIn<SineWave>> {
     let rng = rand::rng().random_range(low..high);
@@ -54,7 +59,7 @@ fn build_ui(app: &Application) {
     // Load settings
     let settings = load_settings("/home/quote/.config/clickexla.json").unwrap();
     // Ui builder
-    let clickopt = ["Sinewave", "TriangleWave", "SquareWave"];
+    let clickopt = ["Sinewave", "TriangleWave", "SquareWave","CustomSound"];
     let clistr = StringList::new(&clickopt);
     let window= ApplicationWindow::builder()
         .application(app)
@@ -110,6 +115,10 @@ fn build_ui(app: &Application) {
         .placeholder_text("Min Hertz")
         .text(format!("{}",settings.whee.mihertz))
         .build();
+    let epath = Entry::builder()
+        .placeholder_text("Path to sound")
+        .text("sound.mp3")
+        .build();
     let enable_clck = CheckButton::builder()
         .label("Enable")
         .build();
@@ -157,10 +166,16 @@ fn build_ui(app: &Application) {
     whe.append(&minhertzwhe);
     whe.append(&maxhertzwhe);
     whe.append(&enable_whee);
+    let extra = Box::builder()
+        .orientation(Orientation::Horizontal)
+        .spacing(1)
+        .build();
+    extra.append(&execute);
+    extra.append(&epath);
     main.append(&btn);
     main.append(&clk);
     main.append(&whe);
-    main.append(&execute);
+    main.append(&extra);
     window.set_child(Some(&main));
     let windows = window.clone();
     execute.connect_clicked(move |_| {
@@ -177,7 +192,8 @@ fn build_ui(app: &Application) {
             maxhertzwhe.clone(),
             enable_clck.clone(),
             enable_btn.clone(),
-            enable_whee.clone()
+            enable_whee.clone(),
+            epath.clone()
         );
     });
     window.present();
@@ -194,7 +210,8 @@ fn soundgen(clickoptions: DropDown,
     maxhertzwhe: Entry,
     enable_clck: CheckButton,
     enable_btn: CheckButton,
-    enable_whee: CheckButton
+    enable_whee: CheckButton,
+    epath: Entry
 ) {
     // Read info
     let clckopt:u32 = clickoptions.selected();
@@ -209,8 +226,10 @@ fn soundgen(clickoptions: DropDown,
     let enaclck: bool = enable_clck.is_active();
     let enabtn: bool = enable_btn.is_active();
     let enawhe: bool = enable_whee.is_active();
+    let apath: String = epath.text().parse().expect("enter a string (PATH)");
     // Save to json
-    save_json(clckopt, btnopt, wheopt, clckmin, clckmax, btnmin, btnmax, whemin, whemax, enaclck, enabtn, enawhe);
+    save_json(clckopt, btnopt, wheopt, clckmin, clckmax, btnmin, btnmax, whemin, whemax, enaclck, enabtn, enawhe, apath);
+    let bpath = apath.clone();
     thread::spawn(move || {
         // Backend logic
         let mut pressed: HashSet<rdev::Key> = HashSet::new();
@@ -298,6 +317,11 @@ fn soundgen(clickoptions: DropDown,
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
                                 sleep(Duration::from_millis(20));
                             },
+                            3=>{
+                                let source = custom(bpath);
+                                streamhandle.mixer().add(source.amplify(0.20));
+                                sleep(Duration::from_millis(20));
+                            },
                             _=>{
                                 let wave=swavemake(clckmin, clckmax);
                                 streamhandle.mixer().add(wave.take_duration(Duration::from_millis(20)).amplify(0.20));
@@ -330,7 +354,8 @@ fn save_json (
     whemax: i32,
     enaclck: bool,
     enabtn: bool,
-    enawhe: bool
+    enawhe: bool,
+    apath: String,
 ) {
     // Save it!! :D
     let data = format!(r#"{{
@@ -352,10 +377,11 @@ fn save_json (
             "mihertz": {},
             "wave": {}
         }}
+        "path": {}
     }}"#,
             enaclck, clckmax, clckmin, clckopt,
             enabtn, btnmax, btnmin, btnopt,
-            enawhe, whemax, whemin, wheopt
+            enawhe, whemax, whemin, wheopt, apath
         );
     fs::write("/home/quote/.config/clickexla.json", data).expect("Unable to save data");
 }
