@@ -27,9 +27,9 @@
             cargoHash = "sha256-dOKF2LK1uI3Z+e88N8xokT8t/RYJ6AY+KbAZ2awfFzI=";
             postInstall = ''
                 mkdir -p $out/share/applications/
-                mkdir -p $out/share/icons/hicolor/128x128/apps/
+                mkdir -p $out/share/icons/hicolor/scalable/apps/
                 install -Dm644 clickexla.desktop $out/share/applications/clickexla.desktop
-                install -Dm644 icon.png $out/share/icons/hicolor/128x128/apps/clickexla.png
+                install -Dm644 icon.svg $out/share/icons/hicolor/scalable/apps/clickexla.svg
             '';
         };
 
