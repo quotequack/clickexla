@@ -24,7 +24,7 @@
                 pkgs.cargo
             ];
             nativeBuildInputs = [ pkgs.pkg-config ];
-            cargoHash = "sha256-3QjT+T2w1Jgz9UeWKaOUBugB9JArz7aPJkCG0gQZXCU=";
+            cargoHash = "sha256-dOKF2LK1uI3Z+e88N8xokT8t/RYJ6AY+KbAZ2awfFzI=";
             postInstall = ''
                 mkdir -p $out/share/applications/
                 mkdir -p $out/share/icons/hicolor/128x128/apps/

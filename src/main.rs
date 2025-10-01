@@ -6,6 +6,7 @@ use std::{collections::HashSet, error::Error, fs::{self, File}, io::BufReader, p
 use serde::{Deserialize, Serialize};
 use serde_json;
 use rdev::Key;
+use dirs::config_dir;
 #[allow(unused)]
 #[allow(deprecated)]
 
@@ -25,7 +26,6 @@ struct Settings {
 }
 
 const APP_ID: &str = "org.quote.clickexla";
-const AUDIOPATH: &str = "typing.mp3";
 fn main() {
     // Frontend Init
     let app = Application::builder()
@@ -35,7 +35,9 @@ fn main() {
     app.run();
 }
 fn custom() -> Decoder<BufReader<File>> {
-    let file = BufReader::new(File::open(AUDIOPATH).unwrap());
+    let mut path = config_dir().unwrap();
+    path.push("clickexla/typing.mp3");
+    let file = BufReader::new(File::open(path).unwrap());
     let source = Decoder::new(file).unwrap();
     source
 }
@@ -63,7 +65,11 @@ fn stwavemake(low:i32, high:i32) -> SawtoothWave {
 
 fn build_ui(app: &Application) {
     // Load settings
-    let settings = load_settings("/home/quote/.config/clickexla.json").unwrap();
+    let mut path = config_dir().unwrap();
+    path.push("clickexla");
+    fs::create_dir_all(&path);
+    path.push("clickexla.json");
+    let settings = load_settings(path.to_str().unwrap()).unwrap();
     // Ui builder
     let clickopt = ["Sinewave", "TriangleWave", "SquareWave", "SawtoothWave", "CustomSound"];
     let clistr = StringList::new(&clickopt);
@@ -259,7 +265,7 @@ fn soundgen(clickoptions: DropDown,
                                 },
                                 4=>{
                                     let source = custom();
-                                    streamhandle.mixer().add(source.amplify(0.20));
+                                    streamhandle.mixer().add(source.amplify(rand::rng().random_range(0.10..0.40)));
                                     sleep(Duration::from_millis(20));
                                 },
                                 _=>{
@@ -302,7 +308,7 @@ fn soundgen(clickoptions: DropDown,
                             },
                             4=>{
                                 let source = custom();
-                                streamhandle.mixer().add(source.amplify(0.20));
+                                streamhandle.mixer().add(source.amplify(rand::rng().random_range(0.10..0.40)));
                                 sleep(Duration::from_millis(20));
                             },
                             _=>{
@@ -338,7 +344,7 @@ fn soundgen(clickoptions: DropDown,
                             },
                             4=>{
                                 let source = custom();
-                                streamhandle.mixer().add(source.amplify(0.20));
+                                streamhandle.mixer().add(source.amplify(rand::rng().random_range(0.10..0.40)));
                                 sleep(Duration::from_millis(20));
                             },
                             _=>{
@@ -400,7 +406,9 @@ fn save_json (
             enabtn, btnmax, btnmin, btnopt,
             enawhe, whemax, whemin, wheopt
         );
-    fs::write("/home/quote/.config/clickexla.json", data).expect("Unable to save data");
+    let mut path = config_dir().unwrap();
+    path.push("clickexla/clickexla.json");
+    fs::write(path, data).expect("Unable to save data");
 }
 fn load_settings(path: &str) -> Result<Settings, std::boxed::Box<dyn std::error::Error>> {
     if Path::new(&path).exists() {
