@@ -15,7 +15,7 @@ nix profile install .
 git clone https://github.com/quotequack/clickexla/
 cd clickexla
 cargo build --release
-sudo cp ./target/release/clicer /usr/bin
+sudo cp ./target/release/clickexla /usr/bin
 ```
 ### for others!
 am sorry but like... figure it out and post what you did here as a pull request for others! (please)
